@@ -1,56 +1,10 @@
+import threading
 from astropy.io import fits
 import matplotlib.pyplot as plt
 import numpy as np
 from os import walk
-from numpy.lib.arraysetops import unique
-import pandas as pd
-import requests
-from bs4 import BeautifulSoup
-import os
 
-
-
-LIGHTCURVES_URL = "https://archive.stsci.edu/pub/kepler/lightcurves";
-
-if not os.path.exists('download_data'):    
-        os.mkdir('download_data')
-
-tce_data =pd.read_csv('tce_data.csv',comment="#")
-kic_list_data = tce_data.kepid
-kic_unique = unique(kic_list_data)
-
-def kepid_string(id):
-    id_string = str(id)
-    id_length = len(id_string)
-    remaining_zeroes = 9-id_length
-    return "0" * remaining_zeroes + id_string
-
-# current_kic_id = kepid_string(kic_unique[0]);
-#kep-90
-current_kic_id = kepid_string("011442793")
-
-kic_id_link = LIGHTCURVES_URL+"/"+current_kic_id[0:4]+"/"+current_kic_id
-
-response = requests.get(kic_id_link)
-body = response.text
-
-
-soup = BeautifulSoup(body, 'html.parser')
-all_links_kic = soup.find_all('a');
-
-if not os.path.exists('download_data/' + current_kic_id):
-    for link in all_links_kic:
-        # display the actual urls
-        if not os.path.exists('download_data/' + current_kic_id):    
-            os.mkdir('download_data/'+current_kic_id)
-
-
-        fits_filename = link.get('href')
-        if "_llc" in fits_filename:
-            print("downloading: " + link.get('href'))       
-            r = requests.get(kic_id_link+"/"+fits_filename)
-            open('download_data/' + current_kic_id+"/"+ fits_filename, 'wb').write(r.content)
-
+from data import get_last_downloaded_kepid_index, threadingTest
 
 ###SHOW STAR FLUX_TIME
 star_time = []
@@ -59,22 +13,80 @@ star_flux = []
 f = []
 
 
-plt.rcParams['axes.facecolor'] = 'black'
-plt.rcParams['figure.facecolor'] = 'gray'
-fig = plt.figure(figsize=(13, 6))
+threadingTest()
+# print(get_last_downloaded_kepid_index())
+# threadingTest()
 
-for (dirpath, dirnames, filenames) in walk("./download_data/"+current_kic_id):
-    for index,file in enumerate(filenames):
-        lightcurve_file = fits.open("./download_data/"+current_kic_id + "/" +filenames[index])
-        lightcurve_data = lightcurve_file["LIGHTCURVE"].data
+# plt.rcParams['axes.facecolor'] = 'black'
+# plt.rcParams['figure.facecolor'] = 'gray'
+# fig = plt.figure(figsize=(13, 6))
 
-        star_time = lightcurve_data["TIME"]
-        star_flux = lightcurve_data["PDCSAP_FLUX"]
-        star_flux -= np.nanmedian(star_flux)
+# def find_nearest(array, value):
+#     array = np.asarray(array)
+#     idx = (np.abs(array - value)).argmin()
+#     return array[idx]
 
-        plt.plot(star_time, star_flux, ".", markersize="3", color="orange")
+# for (dirpath, dirnames, filenames) in walk("./download_data/"+current_kic_id):
+#     for index,file in enumerate(filenames):
+#         lightcurve_file = fits.open("./download_data/"+current_kic_id + "/" +filenames[0])
+#         lightcurve_data = lightcurve_file["LIGHTCURVE"].data
+
+#         star_time = lightcurve_data["TIME"]
+#         star_flux = lightcurve_data["PDCSAP_FLUX"]
+
+#         a = np.array(star_time)
+#         # print(np.where(np.isclose(a,140.49087)))
+#         nearest = find_nearest(a,123.6);
+#         index_transit = list(a).index(nearest)
+
+#         star_time_transit = star_time[index_transit-60: index_transit + 60]
+#         star_flux_transit = star_flux[index_transit-60: index_transit + 60]
 
 
-plt.grid()
-plt.show()
+
+        
+#         star_flux -= np.nanmedian(star_flux)
+
+#         plt.subplot(2,2,1)
+#         plt.plot(star_time_transit, star_flux_transit, ".", markersize="3", color="orange")
+
+# plt.show()
+
+
+# for (dirpath, dirnames, filenames) in walk("./download_data/"+current_kic_id):
+#     for index,file in enumerate(filenames):
+#         lightcurve_file = fits.open("./download_data/"+current_kic_id + "/" +filenames[0])
+#         lightcurve_data = lightcurve_file["LIGHTCURVE"].data
+
+#         star_time = lightcurve_data["TIME"]
+#         x_centroid = lightcurve_data["MOM_CENTR1"]
+#         y_centroid = lightcurve_data["MOM_CENTR2"]
+#         comb_centroid =[]
+
+#         x_centroid -= np.nanmedian(x_centroid)
+#         y_centroid -= np.nanmedian(y_centroid)
+
+#         for i,val in enumerate(y_centroid):
+#             calc = math.sqrt((x_centroid[i]*x_centroid[i]) + (y_centroid[i]*y_centroid[i]))
+#             comb_centroid.append(calc)
+
+#         x_centroid -= np.nanmedian(x_centroid)
+#         plt.subplot(2,2,2)
+#         plt.title("x_cent")
+#         plt.plot(star_time, x_centroid, ".", markersize="3", color="orange")
+        
+#         y_centroid -= np.nanmedian(y_centroid)
+#         plt.subplot(2,2,3)
+#         plt.title("y_cent")
+#         plt.plot(star_time, y_centroid, ".",  markersize="3", color="orange")
+        
+#         comb_centroid -= np.nanmedian(comb_centroid)
+#         comb_centroid /=  10
+#         plt.subplot(2,2,4)
+#         plt.title("comb_cent")
+#         plt.plot(star_time, comb_centroid, ".", markersize="3", color="orange")
+
+
+# plt.grid()
+# plt.show()
 
