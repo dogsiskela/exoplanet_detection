@@ -4,7 +4,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from os import walk
 
-from data import get_last_downloaded_kepid_index, threadingTest
+from fetch_data import download_fits_dataset
+from process_data import get_local_lightcurves
+from visualize_data import visualize_star
 
 ###SHOW STAR FLUX_TIME
 star_time = []
@@ -13,7 +15,29 @@ star_flux = []
 f = []
 
 
-threadingTest()
+#Trgni komentar za da se simnuvaat .fits
+# download_fits_dataset()
+
+#Eksperimentalna faza uste zzzzzz
+visualize_star("000757450")
+get_local_lightcurves("000757450")
+
+
+# visualize_star("001161345")
+# get_local_lightcurves("001161345")
+
+
+#star flux na zvezda (mora da e sminata)
+# visualize_star("000892667")
+
+
+
+
+
+
+
+
+########################################################## STARO, da se sredi
 # print(get_last_downloaded_kepid_index())
 # threadingTest()
 

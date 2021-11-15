@@ -1,0 +1,119 @@
+from numpy.lib.arraysetops import unique
+import pandas as pd
+import requests
+from bs4 import BeautifulSoup
+import os
+import threading
+
+from data_constants import LIGHTCURVES_FOLDER
+
+#Collection of all the fits files for the stars on the NASA DR24 exoplanet dataset
+LIGHTCURVES_URL = "https://archive.stsci.edu/pub/kepler/lightcurves";
+
+#############################################################
+####################### DOWNLOAD DATA #######################
+#############################################################
+
+
+#Add leading zeroes to kepler star ids
+#############################################################
+def get_full_kepid_string(id):
+    id_string = str(id)
+    id_length = len(id_string)
+    remaining_zeroes = 9-id_length
+    return "0" * remaining_zeroes + id_string
+
+#Returns all unique star IDs from the TCE collection dataset
+#############################################################
+def get_all_star_kic():
+    tce_data =pd.read_csv('tce_data.csv',comment="#")
+    kic_list_data = tce_data.kepid
+    kic_unique = unique(kic_list_data)
+    return kic_unique
+
+#Downloads and writes a .fits file from a star to the corresponding star folder
+#############################################################
+#current_kic_id : id of the current star
+#file_name : name of the file on the webiste
+#kic_id_link : link to the page containing all the .llc and .slc files for the current star
+
+def fetch_fits_file(current_kic_id,file_name,kic_id_link):
+        if not os.path.exists(LIGHTCURVES_FOLDER + '/' + current_kic_id):    
+            os.mkdir(LIGHTCURVES_FOLDER + '/'+current_kic_id)
+        
+        print("Downloading: " + file_name)       
+        r = requests.get(kic_id_link + "/" + file_name)
+        open(LIGHTCURVES_FOLDER  + '/' + current_kic_id+"/" + file_name, 'wb').write(r.content) 
+            
+#Get the ked_id of the last downloaded star
+#############################################################
+def get_last_downloaded_kepid_index():
+    path, dirs, files = next(os.walk(LIGHTCURVES_FOLDER))
+    dirs_count = len(dirs)
+    return dirs_count-1
+
+#Link to the page containing the .fits files for star
+#Link format -> https://archive.stsci.edu/pub/kepler/lightcurves/kic_id[:4]/kic_id
+#############################################################
+#current_kic_id : id of the star
+def get_kic_id_link(current_kic_id):
+    return  LIGHTCURVES_URL+"/"+current_kic_id[0:4]+"/"+current_kic_id;
+
+#Get all llc (Long cadence light curves) download links for a star
+#############################################################
+#current_kic_id : pafe link with .fits files
+def get_llc_links_kic(current_kic_link):
+    response = requests.get(current_kic_link)
+    body = response.text
+    soup = BeautifulSoup(body, 'html.parser')
+    all_links_on_site_kic = soup.find_all('a');
+    all_links_kic = []
+    for link in all_links_on_site_kic:
+        if "_llc" in link["href"]:
+            all_links_kic.append(link["href"])
+    return all_links_kic
+
+#Download the whole dataset from the LIGHTCURVES_URL corresponding to
+#the ids of the NASA DR24 exoplanet dataset
+#############################################################
+def download_fits_dataset():
+    initial_kic_index = 0
+    
+    if not os.path.exists(LIGHTCURVES_FOLDER):    
+        os.mkdir(LIGHTCURVES_FOLDER)
+    else:
+        initial_kic_index = get_last_downloaded_kepid_index()
+
+    all_kics = get_all_star_kic()
+
+    for i in range(initial_kic_index,len(all_kics)):
+        print(all_kics[i])
+
+        #Get full KIC id
+        current_kic_id = get_full_kepid_string(all_kics[i])
+
+        #Get the link to the page containing the files for the star
+        kic_id_link = get_kic_id_link(current_kic_id)
+    
+        #Get the download links for the llc .fits files
+        llc_links_current_kic = get_llc_links_kic(kic_id_link)
+
+        llc_links_length = len(llc_links_current_kic)
+        print("Length of fits files:" + str(llc_links_length))
+        
+        threads = []
+        for i in range(0,llc_links_length):
+            thread = threading.Thread(target = fetch_fits_file, args=(current_kic_id,llc_links_current_kic[i],kic_id_link,))
+            thread.daemon = True
+            threads.append(thread)
+            print ("Added thread " + str(i))
+        
+        for thread in threads:
+            thread.start()
+            print("Thread started")
+
+        for thread in threads:
+            thread.join()
+            print("Finished")
+
+        print("=== DONE ===")
