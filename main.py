@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from os import walk
 
-from fetch_data import download_fits_dataset
-from process_data import get_local_lightcurves
+from fetch_data import download_fits_dataset, download_single_fits, get_full_kepid_string
+from process_data import get_global_lightcurves, get_local_lightcurves
 from visualize_data import visualize_star
 
 ###SHOW STAR FLUX_TIME
@@ -18,9 +18,21 @@ f = []
 #Trgni komentar za da se simnuvaat .fits
 # download_fits_dataset()
 
+#wow...
+# visualize_star_id = get_full_kepid_string("11548140")
+# visualize_star_id = get_full_kepid_string("10874614")
+
+
+#testnaova
+# visualize_star_id = get_full_kepid_string("11026304")
+
+visualize_star_id = get_full_kepid_string("12365184")
+download_single_fits(visualize_star_id)
 #Eksperimentalna faza uste zzzzzz
-visualize_star("000757450")
-get_local_lightcurves("000757450")
+visualize_star(visualize_star_id)
+local_fig = get_local_lightcurves(visualize_star_id)
+global_fig = get_global_lightcurves(visualize_star_id)
+plt.show()
 
 
 # visualize_star("001161345")

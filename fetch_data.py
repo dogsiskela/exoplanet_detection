@@ -73,6 +73,44 @@ def get_llc_links_kic(current_kic_link):
             all_links_kic.append(link["href"])
     return all_links_kic
 
+#Download single star .fits data 
+#############################################################
+def download_single_fits(kic_id):
+    if not os.path.exists(LIGHTCURVES_FOLDER):    
+        os.mkdir(LIGHTCURVES_FOLDER)
+    else:
+        initial_kic_index = get_last_downloaded_kepid_index()
+    
+    #Get full KIC id
+    current_kic_id = get_full_kepid_string(kic_id)
+
+    #Get the link to the page containing the files for the star
+    kic_id_link = get_kic_id_link(current_kic_id)
+
+    #Get the download links for the llc .fits files
+    llc_links_current_kic = get_llc_links_kic(kic_id_link)
+
+    llc_links_length = len(llc_links_current_kic)
+    print("Length of fits files:" + str(llc_links_length))
+    
+    threads = []
+    for i in range(0,llc_links_length):
+        thread = threading.Thread(target = fetch_fits_file, args=(current_kic_id,llc_links_current_kic[i],kic_id_link,))
+        thread.daemon = True
+        threads.append(thread)
+        print ("Added thread " + str(i))
+    
+    for thread in threads:
+        thread.start()
+        print("Thread started")
+
+    for thread in threads:
+        thread.join()
+        print("Finished")
+
+    print("=== DONE ===")
+
+
 #Download the whole dataset from the LIGHTCURVES_URL corresponding to
 #the ids of the NASA DR24 exoplanet dataset
 #############################################################
@@ -89,31 +127,4 @@ def download_fits_dataset():
     for i in range(initial_kic_index,len(all_kics)):
         print(all_kics[i])
 
-        #Get full KIC id
-        current_kic_id = get_full_kepid_string(all_kics[i])
-
-        #Get the link to the page containing the files for the star
-        kic_id_link = get_kic_id_link(current_kic_id)
-    
-        #Get the download links for the llc .fits files
-        llc_links_current_kic = get_llc_links_kic(kic_id_link)
-
-        llc_links_length = len(llc_links_current_kic)
-        print("Length of fits files:" + str(llc_links_length))
-        
-        threads = []
-        for i in range(0,llc_links_length):
-            thread = threading.Thread(target = fetch_fits_file, args=(current_kic_id,llc_links_current_kic[i],kic_id_link,))
-            thread.daemon = True
-            threads.append(thread)
-            print ("Added thread " + str(i))
-        
-        for thread in threads:
-            thread.start()
-            print("Thread started")
-
-        for thread in threads:
-            thread.join()
-            print("Finished")
-
-        print("=== DONE ===")
+        download_single_fits(all_kics[i])
