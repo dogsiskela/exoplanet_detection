@@ -10,7 +10,7 @@ from data.data_constants import LIGHTCURVES_FOLDER, LIGHTCURVES_FOLDER_TESS
 def visualize_star(kic_id,mission_id):
 
     CURRENT_LIGHTCURVES_FOLDER = "" 
-    if mission_id == "TESS":
+    if mission_id == "tess":
         CURRENT_LIGHTCURVES_FOLDER = LIGHTCURVES_FOLDER_TESS
     else:
         CURRENT_LIGHTCURVES_FOLDER = LIGHTCURVES_FOLDER 
