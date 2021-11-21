@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from os import walk
 
-from data_constants import LIGHTCURVES_FOLDER,LOCAL_LIGHTCURVES_FOLDER
+from data.data_constants import LIGHTCURVES_FOLDER,LOCAL_LIGHTCURVES_FOLDER
 
 def get_kic_metadata(kic_id,tcp_type):
     kic_metadata = []

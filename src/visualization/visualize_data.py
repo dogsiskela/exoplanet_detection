@@ -4,19 +4,26 @@ import matplotlib.pyplot as plt
 import numpy as np
 from os import walk
 
-from data_constants import LIGHTCURVES_FOLDER
+from data.data_constants import LIGHTCURVES_FOLDER, LIGHTCURVES_FOLDER_TESS
 
 
-def visualize_star(kic_id):
-    if not os.path.exists(LIGHTCURVES_FOLDER + '/' + str(kic_id)):
+def visualize_star(kic_id,mission_id):
+
+    CURRENT_LIGHTCURVES_FOLDER = "" 
+    if mission_id == "TESS":
+        CURRENT_LIGHTCURVES_FOLDER = LIGHTCURVES_FOLDER_TESS
+    else:
+        CURRENT_LIGHTCURVES_FOLDER = LIGHTCURVES_FOLDER 
+
+    if not os.path.exists(CURRENT_LIGHTCURVES_FOLDER + '/' + str(kic_id)):
         return;
     
     plt.rcParams['axes.facecolor'] = 'black'
     plt.rcParams['figure.facecolor'] = 'gray'
 
-    for (dirpath, dirnames, filenames) in walk("./download_data/"+kic_id):
+    for (dirpath, dirnames, filenames) in walk("./"+CURRENT_LIGHTCURVES_FOLDER+"/"+kic_id):
         for index,file in enumerate(filenames):
-            lightcurve_file = fits.open("./download_data/"+kic_id + "/" +filenames[index])
+            lightcurve_file = fits.open("./"+CURRENT_LIGHTCURVES_FOLDER+"/"+kic_id + "/" +filenames[index])
             lightcurve_data = lightcurve_file["LIGHTCURVE"].data
 
             star_time = lightcurve_data["TIME"]
