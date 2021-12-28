@@ -75,7 +75,8 @@ def get_kic_id_link_tess(current_kic_id,season=1):
     season_str = str(season)
     leading_zeroes = 4-len(season_str)
     season_str = "0"*leading_zeroes + season_str
-    
+    print( LIGHTCURVES_URL_TESS+season_str+"/0000/000"+current_kic_id[0]+"/"+current_kic_id[1:5]+"/"+current_kic_id[5:9])
+
     return  LIGHTCURVES_URL_TESS+season_str+"/0000/000"+current_kic_id[0]+"/"+current_kic_id[1:5]+"/"+current_kic_id[5:9];
 
 #Get all llc (Long cadence light curves) download links for a star
@@ -111,10 +112,12 @@ def get_llc_links_kic_fits(current_kic_link):
 def download_single_fits(kic_id):
     if not os.path.exists(LIGHTCURVES_FOLDER):    
         os.mkdir(LIGHTCURVES_FOLDER)
-
     
     #Get full KIC id
     current_kic_id = get_full_kepid_string(kic_id)
+
+    if os.path.exists(LIGHTCURVES_FOLDER + '/' + current_kic_id):    
+        return
 
     #Get the link to the page containing the files for the star
     kic_id_link = get_kic_id_link(current_kic_id)
@@ -152,7 +155,7 @@ def download_single_fits_tess(kic_id,seasons = 43):
     #Get full KIC id
     current_kic_id = get_full_kepid_string(kic_id)
 
-    for i in range(1,seasons): 
+    for i in range(1,seasons+1): 
         print("======= TESS SEASON "+str(i)+" =======")
         #Get the link to the page containing the files for the star
         kic_id_link = get_kic_id_link_tess(current_kic_id,season=i)

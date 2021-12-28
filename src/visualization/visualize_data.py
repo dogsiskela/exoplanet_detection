@@ -5,10 +5,11 @@ import numpy as np
 from os import walk
 
 from data.data_constants import LIGHTCURVES_FOLDER, LIGHTCURVES_FOLDER_TESS
+from data.fetch_data import get_full_kepid_string
 
 
 def visualize_star(kic_id,mission_id):
-
+    kic_id = get_full_kepid_string(kic_id)
     CURRENT_LIGHTCURVES_FOLDER = "" 
     if mission_id == "tess":
         CURRENT_LIGHTCURVES_FOLDER = LIGHTCURVES_FOLDER_TESS
@@ -17,7 +18,7 @@ def visualize_star(kic_id,mission_id):
 
     if not os.path.exists(CURRENT_LIGHTCURVES_FOLDER + '/' + str(kic_id)):
         return;
-    
+    print("exists")
     plt.rcParams['axes.facecolor'] = 'black'
     plt.rcParams['figure.facecolor'] = 'gray'
 
